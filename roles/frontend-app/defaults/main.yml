@@ -1,0 +1,19 @@
+---
+# Frontend App defaults
+frontend_app_name: "neuro-resume-frontend"
+frontend_app_image: "neuroresume/neuro-resume-frontend"
+frontend_app_version: "{{ lookup('env', 'APP_VERSION') | default('latest') }}"
+frontend_app_port: 3000
+frontend_app_env: "production"
+
+# Docker settings
+frontend_app_network: "neuro_resume_network"
+frontend_app_restart_policy: "unless-stopped"
+
+# Paths
+frontend_app_base_path: "/opt/{{ frontend_app_name }}"
+frontend_app_logs_path: "{{ frontend_app_base_path }}/logs"
+
+# Environment variables for frontend
+api_url: "{{ lookup('env', 'API_URL') | default('http://localhost:8000') }}"
+app_env: "{{ lookup('env', 'APP_ENV') | default('production') }}"

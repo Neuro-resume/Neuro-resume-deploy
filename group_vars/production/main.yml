@@ -1,0 +1,26 @@
+---
+# Production environment variables
+app_env: production
+debug: "False"
+log_level: "INFO"
+
+# Database
+database_url: "{{ lookup('env', 'DATABASE_URL') }}"
+
+# API settings
+api_v1_prefix: "/api/v1"
+cors_origins: "{{ lookup('env', 'CORS_ORIGINS') | default('https://yourdomain.com') }}"
+
+# JWT
+jwt_secret: "{{ lookup('env', 'JWT_SECRET') }}"
+jwt_algorithm: "HS256"
+jwt_expiration: "86400"
+
+# API Keys
+anthropic_api_key: "{{ lookup('env', 'ANTHROPIC_API_KEY') }}"
+openai_api_key: "{{ lookup('env', 'OPENAI_API_KEY') }}"
+gemini_api_key: "{{ lookup('env', 'GEMINI_API_KEY') }}"
+gemini_model: "gemini-2.5-flash"
+
+# Frontend
+api_url: "{{ lookup('env', 'API_URL') | default('https://api.yourdomain.com') }}"

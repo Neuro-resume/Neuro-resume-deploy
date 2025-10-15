@@ -1,0 +1,9 @@
+---
+- name: Include prepare environment tasks
+  include_tasks: prepare-environment.yml
+
+- name: Include deploy database tasks
+  include_tasks: deploy-database.yml
+
+- name: Include configure proxy tasks
+  include_tasks: configure-proxy.yml

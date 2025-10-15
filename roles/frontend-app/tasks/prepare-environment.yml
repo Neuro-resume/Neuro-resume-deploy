@@ -1,0 +1,15 @@
+---
+- name: Create application directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ frontend_app_base_path }}"
+    - "{{ frontend_app_logs_path }}"
+
+- name: Ensure Docker network exists
+  community.docker.docker_network:
+    name: "{{ frontend_app_network }}"
+    driver: bridge
+    state: present

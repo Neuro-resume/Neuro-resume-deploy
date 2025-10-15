@@ -1,0 +1,25 @@
+version: '3.8'
+
+networks:
+  {{ frontend_app_network }}:
+    external: true
+
+services:
+  frontend:
+    image: {{ frontend_app_image }}:{{ frontend_app_version }}
+    container_name: {{ frontend_app_name }}
+    restart: {{ frontend_app_restart_policy }}
+    networks:
+      - {{ frontend_app_network }}
+    ports:
+      - "{{ frontend_app_port }}:3000"
+    environment:
+      API_URL: {{ api_url }}
+      NODE_ENV: {{ app_env }}
+    volumes:
+      - {{ frontend_app_logs_path }}:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5

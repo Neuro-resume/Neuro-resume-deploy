@@ -1,0 +1,44 @@
+name: Test Ansible Syntax
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible python3-pip
+          pip3 install docker
+
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy collection install community.docker
+          ansible-galaxy collection install community.general
+          ansible-galaxy collection install ansible.posix
+
+      - name: Test Ansible syntax
+        run: |
+          # Create temporary vault password file to avoid vault errors
+          echo "dummy_password" > .vault_pass
+          
+          ansible-playbook --syntax-check \
+            --vault-password-file .vault_pass \
+            playbooks/all-delploy.yml
+          
+          ansible-playbook --syntax-check \
+            --vault-password-file .vault_pass \
+            playbooks/backend-delpoy.yml
+          
+          ansible-playbook --syntax-check \
+            --vault-password-file .vault_pass \
+            playbooks/frontend-deploy.yml

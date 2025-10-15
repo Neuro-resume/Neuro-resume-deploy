@@ -1,0 +1,12 @@
+---
+- name: Generate docker-compose file
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ frontend_app_base_path }}/docker-compose.yml"
+    mode: '0644'
+
+- name: Deploy frontend with Docker Compose
+  community.docker.docker_compose:
+    project_src: "{{ frontend_app_base_path }}"
+    state: present
+    remove_orphans: yes

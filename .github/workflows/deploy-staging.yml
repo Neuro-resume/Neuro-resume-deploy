@@ -1,0 +1,93 @@
+name: Deploy to Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_deployment:
+        description: 'Type "deploy" to confirm staging deployment'
+        required: true
+        type: string
+      target_version:
+        description: 'Application version to deploy (optional)'
+        required: false
+        type: string
+        default: 'latest'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.STAGING_TARGET_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible python3-pip
+          pip3 install docker
+
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy collection install community.docker
+          ansible-galaxy collection install community.general
+          ansible-galaxy collection install ansible.posix
+
+      - name: Validate deployment confirmation
+        if: github.event.inputs.confirm_deployment != 'deploy'
+        run: |
+          echo "Deployment not confirmed. Please type 'deploy' to confirm."
+          exit 1
+
+      - name: Display deployment info
+        run: |
+          echo "🚀 Starting staging deployment"
+          echo "Version: ${{ github.event.inputs.target_version || 'latest' }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Commit: ${{ github.sha }}"
+
+      - name: Deploy application
+        run: |
+          ansible-playbook \
+            -i inventory/staging/hosts.ini \
+            --private-key ~/.ssh/id_rsa \
+            --vault-password-file .vault_pass \
+            playbooks/all-delploy.yml
+        env:
+          APP_VERSION: ${{ github.event.inputs.target_version || 'latest' }}
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          APP_ENV: ${{ secrets.STAGING_APP_ENV }}
+          DEBUG: ${{ secrets.STAGING_DEBUG }}
+          LOG_LEVEL: ${{ secrets.STAGING_LOG_LEVEL }}
+          API_V1_PREFIX: ${{ secrets.STAGING_API_V1_PREFIX }}
+          CORS_ORIGINS: ${{ secrets.STAGING_CORS_ORIGINS }}
+          JWT_SECRET: ${{ secrets.STAGING_JWT_SECRET }}
+          JWT_ALGORITHM: ${{ secrets.STAGING_JWT_ALGORITHM }}
+          JWT_EXPIRATION: ${{ secrets.STAGING_JWT_EXPIRATION }}
+          ANTHROPIC_API_KEY: ${{ secrets.STAGING_ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.STAGING_OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.STAGING_GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ secrets.STAGING_GEMINI_MODEL }}
+      - name: Deployment completed
+        if: success()
+        run: |
+          echo "✅ Staging deployment completed successfully!"
+          echo "Version: ${{ github.event.inputs.target_version || 'latest' }}"
+          echo "Environment: staging"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Timestamp: $(date)"
+
+      - name: Deployment failed
+        if: failure()
+        run: |
+          echo "❌ Staging deployment failed!"
+          echo "Check the logs above for details"
+          exit 1
