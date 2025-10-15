@@ -1,0 +1,30 @@
+---
+- name: Deploy Neuro Resume Application
+  hosts: all
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == 'Debian'
+
+    - name: Install required packages
+      package:
+        name:
+          - docker.io
+          - docker-compose
+          - python3-pip
+          - curl
+        state: present
+
+    - name: Install Docker Python module
+      pip:
+        name: docker
+        state: present
+
+  roles:
+    - backend-app
+    - frontend-app

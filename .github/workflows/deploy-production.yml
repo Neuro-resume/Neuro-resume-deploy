@@ -1,0 +1,93 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_deployment:
+        description: 'Type "deploy" to confirm production deployment'
+        required: true
+        type: string
+      target_version:
+        description: 'Application version to deploy (optional)'
+        required: false
+        type: string
+        default: 'latest'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.TARGET_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible python3-pip
+          pip3 install docker
+
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy collection install community.docker
+          ansible-galaxy collection install community.general
+          ansible-galaxy collection install ansible.posix
+
+      - name: Validate deployment confirmation
+        if: github.event.inputs.confirm_deployment != 'deploy'
+        run: |
+          echo "Deployment not confirmed. Please type 'deploy' to confirm."
+          exit 1
+
+      - name: Display deployment info
+        run: |
+          echo "🚀 Starting production deployment"
+          echo "Version: ${{ github.event.inputs.target_version || 'latest' }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Commit: ${{ github.sha }}"
+
+      - name: Deploy application
+        run: |
+          ansible-playbook \
+            -i inventory/production/hosts.ini \
+            --private-key ~/.ssh/id_rsa \
+            --vault-password-file .vault_pass \
+            playbooks/all-delploy.yml
+        env:
+          APP_VERSION: ${{ github.event.inputs.target_version || 'latest' }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          APP_ENV: ${{ secrets.APP_ENV }}
+          DEBUG: ${{ secrets.DEBUG }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          API_V1_PREFIX: ${{ secrets.API_V1_PREFIX }}
+          CORS_ORIGINS: ${{ secrets.CORS_ORIGINS }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_ALGORITHM: ${{ secrets.JWT_ALGORITHM }}
+          JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL }}
+      - name: Deployment completed
+        if: success()
+        run: |
+          echo "✅ Production deployment completed successfully!"
+          echo "Version: ${{ github.event.inputs.target_version || 'latest' }}"
+          echo "Environment: production"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Timestamp: $(date)"
+
+      - name: Deployment failed
+        if: failure()
+        run: |
+          echo "❌ Production deployment failed!"
+          echo "Check the logs above for details"
+          exit 1

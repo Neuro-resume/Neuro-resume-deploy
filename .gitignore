@@ -1,0 +1,25 @@
+# Ansible
+.vault_pass
+*.retry
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.local
+
+# Ansible vault password (uncomment if you want to commit it)
+# .vault_pass

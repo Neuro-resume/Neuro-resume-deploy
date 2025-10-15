@@ -1,0 +1,26 @@
+---
+# Staging environment variables
+app_env: staging
+debug: "True"
+log_level: "DEBUG"
+
+# Database
+database_url: "{{ lookup('env', 'DATABASE_URL') | default('postgresql+asyncpg://postgres:postgres@localhost:5432/neuro_resume') }}"
+
+# API settings
+api_v1_prefix: "/api/v1"
+cors_origins: "http://localhost:3000,http://localhost:8080"
+
+# JWT
+jwt_secret: "{{ lookup('env', 'JWT_SECRET') }}"
+jwt_algorithm: "HS256"
+jwt_expiration: "86400"
+
+# API Keys
+anthropic_api_key: "{{ lookup('env', 'ANTHROPIC_API_KEY') }}"
+openai_api_key: "{{ lookup('env', 'OPENAI_API_KEY') }}"
+gemini_api_key: "{{ lookup('env', 'GEMINI_API_KEY') }}"
+gemini_model: "gemini-2.5-flash"
+
+# Frontend
+api_url: "http://localhost:8000"

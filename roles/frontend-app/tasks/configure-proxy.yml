@@ -1,0 +1,23 @@
+---
+# Configure nginx proxy for frontend
+- name: Install nginx
+  package:
+    name: nginx
+    state: present
+  become: yes
+
+- name: Configure nginx for frontend
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/{{ frontend_app_name }}
+    mode: '0644'
+  become: yes
+  notify: reload nginx
+
+- name: Enable nginx site
+  file:
+    src: /etc/nginx/sites-available/{{ frontend_app_name }}
+    dest: /etc/nginx/sites-enabled/{{ frontend_app_name }}
+    state: link
+  become: yes
+  notify: reload nginx

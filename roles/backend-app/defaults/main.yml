@@ -1,0 +1,38 @@
+---
+# Backend App defaults
+backend_app_name: "neuro-resume-backend"
+backend_app_image: "neuroresume/neuro-resume-backend"
+backend_app_version: "{{ lookup('env', 'APP_VERSION') | default('latest') }}"
+backend_app_port: 8000
+backend_app_env: "production"
+
+# Database defaults
+db_name: "neuro_resume"
+db_user: "postgres"
+db_password: "postgres"
+db_port: 5432
+db_image: "postgres:15-alpine"
+
+# Docker settings
+backend_app_network: "neuro_resume_network"
+backend_app_restart_policy: "unless-stopped"
+
+# Paths
+backend_app_base_path: "/opt/{{ backend_app_name }}"
+backend_app_data_path: "{{ backend_app_base_path }}/data"
+backend_app_logs_path: "{{ backend_app_base_path }}/logs"
+
+# Environment variables
+app_env: "{{ lookup('env', 'APP_ENV') | default('production') }}"
+debug: "{{ lookup('env', 'DEBUG') | default('False') }}"
+log_level: "{{ lookup('env', 'LOG_LEVEL') | default('INFO') }}"
+api_v1_prefix: "{{ lookup('env', 'API_V1_PREFIX') | default('/api/v1') }}"
+cors_origins: "{{ lookup('env', 'CORS_ORIGINS') | default('http://localhost:3000') }}"
+jwt_secret: "{{ lookup('env', 'JWT_SECRET') }}"
+jwt_algorithm: "{{ lookup('env', 'JWT_ALGORITHM') | default('HS256') }}"
+jwt_expiration: "{{ lookup('env', 'JWT_EXPIRATION') | default('86400') }}"
+anthropic_api_key: "{{ lookup('env', 'ANTHROPIC_API_KEY') }}"
+openai_api_key: "{{ lookup('env', 'OPENAI_API_KEY') }}"
+gemini_api_key: "{{ lookup('env', 'GEMINI_API_KEY') }}"
+gemini_model: "{{ lookup('env', 'GEMINI_MODEL') | default('gemini-2.5-flash') }}"
+database_url: "{{ lookup('env', 'DATABASE_URL') | default('postgresql+asyncpg://postgres:postgres@localhost:5432/neuro_resume') }}"
