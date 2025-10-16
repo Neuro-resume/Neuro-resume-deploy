@@ -16,7 +16,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: staging
+    environment: STAGE
 
     steps:
       - name: Checkout code
@@ -25,9 +25,9 @@ jobs:
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.STAGING_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.ANSIBLE_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.STAGING_TARGET_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.TARGET_HOST }} >> ~/.ssh/known_hosts
 
       - name: Install Ansible
         run: |
@@ -63,19 +63,19 @@ jobs:
             playbooks/all-delploy.yml
         env:
           APP_VERSION: ${{ github.event.inputs.target_version || 'latest' }}
-          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-          APP_ENV: ${{ secrets.STAGING_APP_ENV }}
-          DEBUG: ${{ secrets.STAGING_DEBUG }}
-          LOG_LEVEL: ${{ secrets.STAGING_LOG_LEVEL }}
-          API_V1_PREFIX: ${{ secrets.STAGING_API_V1_PREFIX }}
-          CORS_ORIGINS: ${{ secrets.STAGING_CORS_ORIGINS }}
-          JWT_SECRET: ${{ secrets.STAGING_JWT_SECRET }}
-          JWT_ALGORITHM: ${{ secrets.STAGING_JWT_ALGORITHM }}
-          JWT_EXPIRATION: ${{ secrets.STAGING_JWT_EXPIRATION }}
-          ANTHROPIC_API_KEY: ${{ secrets.STAGING_ANTHROPIC_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.STAGING_OPENAI_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.STAGING_GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ secrets.STAGING_GEMINI_MODEL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          APP_ENV: ${{ secrets.APP_ENV }}
+          DEBUG: ${{ secrets.DEBUG }}
+          LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
+          API_V1_PREFIX: ${{ secrets.API_V1_PREFIX }}
+          CORS_ORIGINS: ${{ secrets.CORS_ORIGINS }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_ALGORITHM: ${{ secrets.JWT_ALGORITHM }}
+          JWT_EXPIRATION: ${{ secrets.JWT_EXPIRATION }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL }}
       - name: Deployment completed
         if: success()
         run: |
