@@ -41,6 +41,9 @@ jobs:
           ansible-galaxy collection install community.general
           ansible-galaxy collection install ansible.posix
 
+      - name: Create vault password file
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
+
       - name: Validate deployment confirmation
         if: github.event.inputs.confirm_deployment != 'deploy'
         run: |
